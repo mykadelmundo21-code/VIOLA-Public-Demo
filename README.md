@@ -10,9 +10,9 @@ The system provides role-based features for Guidance personnel, Teachers, and Pa
 
 ---
 
-## ✨ Features
+## Features
 
-### 🔐 Authentication & Account Management
+### Authentication & Account Management
 
 - User login and logout
 - Role-based access
@@ -20,7 +20,7 @@ The system provides role-based features for Guidance personnel, Teachers, and Pa
 - Password reset using verification codes
 - Account management
 
-### 👩‍💼 Guidance Management
+### Guidance Management
 
 - Guidance dashboard
 - Student management
@@ -34,7 +34,7 @@ The system provides role-based features for Guidance personnel, Teachers, and Pa
 - Reports
 - Account management
 
-### 👨‍🏫 Teacher Features
+### Teacher Features
 
 - Teacher dashboard
 - View assigned students
@@ -42,21 +42,21 @@ The system provides role-based features for Guidance personnel, Teachers, and Pa
 - Manage and view violation records
 - Violation history
 
-### 👨‍👩‍👧 Parent Features
+### Parent Features
 
 - Parent dashboard
 - View student information
 - View student violations
 - View violation status and updates
 
-### 🔔 Notifications
+### Notifications
 
 - User notifications
 - Violation status notifications
 - Intervention update notifications
 - Real-time notification support
 
-### ⚙️ Profile & Settings
+### Profile & Settings
 
 - Profile management
 - Profile photo
@@ -65,7 +65,7 @@ The system provides role-based features for Guidance personnel, Teachers, and Pa
 
 ---
 
-## 👥 User Roles
+## User Roles
 
 | Role | Main Functions |
 |------|----------------|
@@ -75,7 +75,7 @@ The system provides role-based features for Guidance personnel, Teachers, and Pa
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 ### Frontend
 
@@ -105,9 +105,7 @@ The system provides role-based features for Guidance personnel, Teachers, and Pa
 - Git
 
 ---
-# Installation
-Requirements
-
+### Installation Requirements
 Make sure you have:
 
 PHP
@@ -116,11 +114,11 @@ Node.js and npm
 MySQL 
 Git
 
-1. Clone the Repository
+# 1. Clone the Repository
 git clone https://github.com/mykadelmundo21-code/VIOLA-Public-Demo.git
 cd VIOLA-Public-Demo
 
-2. Backend Setup
+# 2. Backend Setup
 Navigate to the Laravel backend:
 cd backend
 
@@ -139,7 +137,7 @@ backend/.env
 Run the database migrations:
 php artisan migrate
 
-3. Frontend Setup
+# 3. Frontend Setup
 
 Open another terminal and navigate to the frontend:
 cd frontend
@@ -152,7 +150,7 @@ frontend/.env
 
 Configure the required Vite and Reverb settings for your local environment.
 
-4. Run the Backend
+# 4. Run the Backend
 
 From the backend directory:
 php artisan serve
@@ -160,13 +158,13 @@ php artisan serve
 The Laravel backend will normally be available at:
 http://127.0.0.1:8000
 
-5. Run the Frontend
+# 5. Run the Frontend
 From the frontend directory:
 npm run dev
 
 Vite will provide the local frontend development URL.
 
-# 🔒 Security
+# Security
 Sensitive environment files are intentionally excluded from this repository.
 
 The following files should remain local:
@@ -178,7 +176,7 @@ vendor/
 node_modules/
 storage/logs/
 
-# Never commit real:
+Never commit real:
 API keys
 Passwords
 Database credentials
@@ -227,7 +225,7 @@ Production credentials and private environment configuration are not included in
 
 Some production-specific services and configurations may require additional local environment setup before the complete system can be executed.
 
-👩‍💻 Author
+## Author
 
 Myka Delmundo
 
