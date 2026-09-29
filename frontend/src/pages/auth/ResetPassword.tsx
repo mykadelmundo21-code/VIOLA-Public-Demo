@@ -1,11 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
-import {
-  Link,
-  useNavigate,
-  useSearchParams,
-} from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 
-const API_URL = "http://localhost:8000/api";
+const API_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000/api";
 
 export default function ResetPassword() {
   const navigate = useNavigate();
@@ -18,8 +14,7 @@ export default function ResetPassword() {
 
   const [password, setPassword] = useState("");
 
-  const [confirmPassword, setConfirmPassword] =
-    useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   const [loading, setLoading] = useState(false);
 
@@ -28,40 +23,31 @@ export default function ResetPassword() {
   const [success, setSuccess] = useState("");
 
   useEffect(() => {
-    const emailFromUrl =
-      searchParams.get("email") || "";
+    const emailFromUrl = searchParams.get("email") || "";
 
     setEmail(emailFromUrl);
   }, [searchParams]);
 
-  const handleSubmit = async (
-    event: FormEvent<HTMLFormElement>,
-  ) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     setError("");
     setSuccess("");
 
     if (code.length !== 6) {
-      setError(
-        "Please enter the 6-digit verification code.",
-      );
+      setError("Please enter the 6-digit verification code.");
 
       return;
     }
 
     if (password.length < 8) {
-      setError(
-        "Password must contain at least 8 characters.",
-      );
+      setError("Password must contain at least 8 characters.");
 
       return;
     }
 
     if (password !== confirmPassword) {
-      setError(
-        "The passwords do not match.",
-      );
+      setError("The passwords do not match.");
 
       return;
     }
@@ -69,53 +55,37 @@ export default function ResetPassword() {
     setLoading(true);
 
     try {
-      const response = await fetch(
-        `${API_URL}/reset-password`,
-        {
-          method: "POST",
+      const response = await fetch(`${API_URL}/reset-password`, {
+        method: "POST",
 
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-          },
-
-          body: JSON.stringify({
-            email: email.trim(),
-            code,
-            password,
-            password_confirmation:
-              confirmPassword,
-          }),
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
         },
-      );
+
+        body: JSON.stringify({
+          email: email.trim(),
+          code,
+          password,
+          password_confirmation: confirmPassword,
+        }),
+      });
 
       const data = await response.json();
 
       if (!response.ok) {
-        if (
-          response.status === 422 &&
-          data.errors
-        ) {
-          const firstError = Object.values(
-            data.errors,
-          )[0] as string[];
+        if (response.status === 422 && data.errors) {
+          const firstError = Object.values(data.errors)[0] as string[];
 
           throw new Error(
-            firstError?.[0] ||
-              data.message ||
-              "Unable to reset password.",
+            firstError?.[0] || data.message || "Unable to reset password.",
           );
         }
 
-        throw new Error(
-          data.message ||
-            "Unable to reset password.",
-        );
+        throw new Error(data.message || "Unable to reset password.");
       }
 
-      setSuccess(
-        "Password reset successfully. Redirecting to login...",
-      );
+      setSuccess("Password reset successfully. Redirecting to login...");
 
       setTimeout(() => {
         navigate("/login", {
@@ -130,9 +100,7 @@ export default function ResetPassword() {
       } else if (err instanceof Error) {
         setError(err.message);
       } else {
-        setError(
-          "Something went wrong. Please try again.",
-        );
+        setError("Something went wrong. Please try again.");
       }
     } finally {
       setLoading(false);
@@ -142,12 +110,9 @@ export default function ResetPassword() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-100 px-4 py-10 dark:bg-gray-950">
       <div className="w-full max-w-md rounded-2xl border border-gray-200 bg-white p-8 shadow-xl dark:border-gray-800 dark:bg-gray-900 md:p-10">
-
         {/* Logo */}
         <div className="mb-8 flex h-14 w-14 items-center justify-center rounded-xl bg-gray-800 text-2xl font-bold text-white">
-          <span className="text-red-500">
-            V
-          </span>
+          <span className="text-red-500">V</span>
         </div>
 
         {/* Header */}
@@ -161,8 +126,8 @@ export default function ResetPassword() {
           </h1>
 
           <p className="mt-3 text-sm leading-relaxed text-gray-500 dark:text-gray-400">
-            Enter the verification code sent to your email
-            and create a new password.
+            Enter the verification code sent to your email and create a new
+            password.
           </p>
         </div>
 
@@ -187,10 +152,7 @@ export default function ResetPassword() {
         )}
 
         {/* Form */}
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-5"
-        >
+        <form onSubmit={handleSubmit} className="space-y-5">
           {/* Email */}
           <div>
             <label
@@ -205,9 +167,7 @@ export default function ResetPassword() {
               name="email"
               type="email"
               value={email}
-              onChange={(event) =>
-                setEmail(event.target.value)
-              }
+              onChange={(event) => setEmail(event.target.value)}
               placeholder="Enter your email"
               autoComplete="email"
               disabled={loading}
@@ -233,11 +193,7 @@ export default function ResetPassword() {
               maxLength={6}
               value={code}
               onChange={(event) =>
-                setCode(
-                  event.target.value
-                    .replace(/\D/g, "")
-                    .slice(0, 6),
-                )
+                setCode(event.target.value.replace(/\D/g, "").slice(0, 6))
               }
               placeholder="Enter 6-digit code"
               autoComplete="one-time-code"
@@ -261,9 +217,7 @@ export default function ResetPassword() {
               name="password"
               type="password"
               value={password}
-              onChange={(event) =>
-                setPassword(event.target.value)
-              }
+              onChange={(event) => setPassword(event.target.value)}
               placeholder="Enter new password"
               autoComplete="new-password"
               disabled={loading}
@@ -286,11 +240,7 @@ export default function ResetPassword() {
               name="confirmPassword"
               type="password"
               value={confirmPassword}
-              onChange={(event) =>
-                setConfirmPassword(
-                  event.target.value,
-                )
-              }
+              onChange={(event) => setConfirmPassword(event.target.value)}
               placeholder="Confirm your new password"
               autoComplete="new-password"
               disabled={loading}
@@ -307,9 +257,7 @@ export default function ResetPassword() {
 
             <ul className="mt-2 space-y-1 text-xs text-gray-500 dark:text-gray-400">
               <li>• Use at least 8 characters</li>
-              <li>
-                • Avoid using easily guessed information
-              </li>
+              <li>• Avoid using easily guessed information</li>
             </ul>
           </div>
 

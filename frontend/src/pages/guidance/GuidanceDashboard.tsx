@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import StatCard from "../../components/StatCard";
 
-const API_URL = "http://localhost:8000/api";
+const API_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000/api";
 
 type RecentViolation = {
   id: number;
@@ -34,8 +34,7 @@ type DashboardData = {
 };
 
 export default function GuidanceDashboard() {
-  const [dashboard, setDashboard] =
-    useState<DashboardData | null>(null);
+  const [dashboard, setDashboard] = useState<DashboardData | null>(null);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -51,34 +50,26 @@ export default function GuidanceDashboard() {
           sessionStorage.getItem("viola_token");
 
         if (!token) {
-          throw new Error(
-            "Your session has expired. Please log in again.",
-          );
+          throw new Error("Your session has expired. Please log in again.");
         }
 
-        const response = await fetch(
-          `${API_URL}/guidance/dashboard`,
-          {
-            method: "GET",
-            headers: {
-              Accept: "application/json",
-              Authorization: `Bearer ${token}`,
-            },
+        const response = await fetch(`${API_URL}/guidance/dashboard`, {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
           },
-        );
+        });
 
         const result = await response.json();
 
         if (!response.ok) {
           if (response.status === 401) {
-            throw new Error(
-              "Your session has expired. Please log in again.",
-            );
+            throw new Error("Your session has expired. Please log in again.");
           }
 
           throw new Error(
-            result.message ||
-              "Unable to load guidance dashboard.",
+            result.message || "Unable to load guidance dashboard.",
           );
         }
 
@@ -93,9 +84,7 @@ export default function GuidanceDashboard() {
         } else if (err instanceof Error) {
           setError(err.message);
         } else {
-          setError(
-            "Unable to load dashboard.",
-          );
+          setError("Unable to load dashboard.");
         }
       } finally {
         setLoading(false);
@@ -108,7 +97,6 @@ export default function GuidanceDashboard() {
   if (loading) {
     return (
       <div className="space-y-7">
-
         <div>
           <p className="text-sm font-medium text-red-700 dark:text-red-400">
             Guidance Dashboard
@@ -131,7 +119,6 @@ export default function GuidanceDashboard() {
             />
           ))}
         </div>
-
       </div>
     );
   }
@@ -139,7 +126,6 @@ export default function GuidanceDashboard() {
   if (error || !dashboard) {
     return (
       <div className="space-y-7">
-
         <div>
           <p className="text-sm font-medium text-red-700 dark:text-red-400">
             Guidance Dashboard
@@ -156,35 +142,26 @@ export default function GuidanceDashboard() {
           </h2>
 
           <p className="mt-2 text-sm text-red-600 dark:text-red-300">
-            {error ||
-              "No dashboard data was returned."}
+            {error || "No dashboard data was returned."}
           </p>
         </div>
-
       </div>
     );
   }
 
-  const distribution =
-    dashboard.violation_distribution ?? [];
+  const distribution = dashboard.violation_distribution ?? [];
 
-  const monthlyActivity =
-    dashboard.monthly_activity ?? [];
+  const monthlyActivity = dashboard.monthly_activity ?? [];
 
-  const recentViolations =
-    dashboard.recent_violations ?? [];
+  const recentViolations = dashboard.recent_violations ?? [];
 
-  const maxMonthlyValue =
-    Math.max(
-      ...monthlyActivity.map(
-        (item) => Number(item.count) || 0,
-      ),
-      1,
-    );
+  const maxMonthlyValue = Math.max(
+    ...monthlyActivity.map((item) => Number(item.count) || 0),
+    1,
+  );
 
   return (
     <div className="space-y-7">
-
       {/* PAGE HEADER */}
 
       <div>
@@ -204,12 +181,9 @@ export default function GuidanceDashboard() {
       {/* STATISTICS */}
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-
         <StatCard
           title="Total Students"
-          value={String(
-            dashboard.total_students ?? 0,
-          )}
+          value={String(dashboard.total_students ?? 0)}
           subtitle="Active student records"
           icon="◉"
           accent="gray"
@@ -217,9 +191,7 @@ export default function GuidanceDashboard() {
 
         <StatCard
           title="Active Violations"
-          value={String(
-            dashboard.active_violations ?? 0,
-          )}
+          value={String(dashboard.active_violations ?? 0)}
           subtitle="Requires monitoring"
           icon="!"
           accent="red"
@@ -227,9 +199,7 @@ export default function GuidanceDashboard() {
 
         <StatCard
           title="Assessment Suggestions"
-          value={String(
-            dashboard.pending_assessments ?? 0,
-          )}
+          value={String(dashboard.pending_assessments ?? 0)}
           subtitle="Suggested for review"
           icon="✓"
           accent="red"
@@ -237,24 +207,19 @@ export default function GuidanceDashboard() {
 
         <StatCard
           title="Active Interventions"
-          value={String(
-            dashboard.active_interventions ?? 0,
-          )}
+          value={String(dashboard.active_interventions ?? 0)}
           subtitle="Currently monitored"
           icon="↗"
           accent="gray"
         />
-
       </div>
 
       {/* ANALYTICS */}
 
       <div className="grid gap-5 xl:grid-cols-2">
-
         {/* VIOLATION DISTRIBUTION */}
 
         <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:shadow-none">
-
           <div className="mb-6">
             <h2 className="font-bold text-gray-900 dark:text-white">
               Violation Distribution
@@ -266,13 +231,9 @@ export default function GuidanceDashboard() {
           </div>
 
           <div className="flex items-center justify-center py-4">
-
             <div className="relative flex h-48 w-48 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700">
-
               <div className="absolute inset-6 flex items-center justify-center rounded-full bg-white shadow-sm dark:bg-gray-800">
-
                 <div className="text-center">
-
                   <p className="text-3xl font-bold text-gray-900 dark:text-white">
                     {dashboard.active_violations ?? 0}
                   </p>
@@ -280,17 +241,12 @@ export default function GuidanceDashboard() {
                   <p className="text-xs text-gray-500 dark:text-gray-400">
                     Reports
                   </p>
-
                 </div>
-
               </div>
-
             </div>
-
           </div>
 
           <div className="mt-5 grid grid-cols-2 gap-3 text-sm">
-
             {distribution.length > 0 ? (
               distribution.map((item) => (
                 <div
@@ -311,15 +267,12 @@ export default function GuidanceDashboard() {
                 No violation records available.
               </div>
             )}
-
           </div>
-
         </div>
 
         {/* MONTHLY ACTIVITY */}
 
         <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:shadow-none">
-
           <div className="mb-6">
             <h2 className="font-bold text-gray-900 dark:text-white">
               Violation Activity
@@ -331,21 +284,17 @@ export default function GuidanceDashboard() {
           </div>
 
           <div className="flex h-64 items-end justify-between gap-3 border-b border-gray-200 px-2 pt-5 dark:border-gray-700">
-
             {monthlyActivity.length > 0 ? (
               monthlyActivity.map((item) => {
-                const value =
-                  Number(item.count) || 0;
+                const value = Number(item.count) || 0;
 
-                const height =
-                  (value / maxMonthlyValue) * 80;
+                const height = (value / maxMonthlyValue) * 80;
 
                 return (
                   <div
                     key={item.month}
                     className="flex h-full flex-1 flex-col items-center justify-end"
                   >
-
                     <span className="mb-2 text-xs font-semibold text-gray-600 dark:text-gray-300">
                       {value}
                     </span>
@@ -353,13 +302,9 @@ export default function GuidanceDashboard() {
                     <div
                       className="w-full max-w-10 rounded-t-md bg-red-700 transition hover:bg-red-800 dark:bg-red-600 dark:hover:bg-red-500"
                       style={{
-                        height: `${Math.max(
-                          height,
-                          value > 0 ? 4 : 0,
-                        )}%`,
+                        height: `${Math.max(height, value > 0 ? 4 : 0)}%`,
                       }}
                     />
-
                   </div>
                 );
               })
@@ -368,29 +313,20 @@ export default function GuidanceDashboard() {
                 No monthly violation data available.
               </div>
             )}
-
           </div>
 
           <div className="mt-3 flex justify-between px-2 text-xs text-gray-400 dark:text-gray-500">
-
             {monthlyActivity.map((item) => (
-              <span key={item.month}>
-                {item.month}
-              </span>
+              <span key={item.month}>{item.month}</span>
             ))}
-
           </div>
-
         </div>
-
       </div>
 
       {/* RECENT VIOLATION REPORTS */}
 
       <div className="rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:shadow-none">
-
         <div className="flex items-center justify-between border-b border-gray-200 px-6 py-5 dark:border-gray-700">
-
           <div>
             <h2 className="font-bold text-gray-900 dark:text-white">
               Recent Violation Reports
@@ -407,51 +343,33 @@ export default function GuidanceDashboard() {
           >
             View All
           </a>
-
         </div>
 
         <div className="overflow-x-auto">
-
           <table className="w-full min-w-[700px] text-left text-sm">
-
             <thead className="bg-gray-50 text-xs uppercase tracking-wider text-gray-500 dark:bg-gray-700/60 dark:text-gray-400">
-
               <tr>
-                <th className="px-6 py-4 font-semibold">
-                  Student
-                </th>
+                <th className="px-6 py-4 font-semibold">Student</th>
 
-                <th className="px-6 py-4 font-semibold">
-                  Violation
-                </th>
+                <th className="px-6 py-4 font-semibold">Violation</th>
 
-                <th className="px-6 py-4 font-semibold">
-                  Date
-                </th>
+                <th className="px-6 py-4 font-semibold">Date</th>
 
-                <th className="px-6 py-4 font-semibold">
-                  Status
-                </th>
+                <th className="px-6 py-4 font-semibold">Status</th>
               </tr>
-
             </thead>
 
             <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-
               {recentViolations.length > 0 ? (
                 recentViolations.map((item) => {
-
                   const status =
-                    item.status
-                      ?.toLowerCase()
-                      .replace("_", " ") || "";
+                    item.status?.toLowerCase().replace("_", " ") || "";
 
                   return (
                     <tr
                       key={`${item.id}-${item.date}`}
                       className="transition hover:bg-gray-50 dark:hover:bg-gray-700/40"
                     >
-
                       <td className="px-6 py-4 font-semibold text-gray-900 dark:text-white">
                         {item.student}
                       </td>
@@ -465,11 +383,9 @@ export default function GuidanceDashboard() {
                       </td>
 
                       <td className="px-6 py-4">
-
                         <span
                           className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
-                            status === "resolved" ||
-                            status === "closed"
+                            status === "resolved" || status === "closed"
                               ? "bg-green-50 text-green-700 dark:bg-green-500/10 dark:text-green-400"
                               : status === "under review"
                                 ? "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400"
@@ -478,9 +394,7 @@ export default function GuidanceDashboard() {
                         >
                           {item.status}
                         </span>
-
                       </td>
-
                     </tr>
                   );
                 })
@@ -494,21 +408,15 @@ export default function GuidanceDashboard() {
                   </td>
                 </tr>
               )}
-
             </tbody>
-
           </table>
-
         </div>
-
       </div>
 
       {/* PENDING ACTIONS */}
 
       <div className="grid gap-5 md:grid-cols-3">
-
         <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:shadow-none">
-
           <p className="text-sm text-gray-500 dark:text-gray-400">
             Pending Reviews
           </p>
@@ -520,11 +428,9 @@ export default function GuidanceDashboard() {
           <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">
             Violation reports awaiting review
           </p>
-
         </div>
 
         <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:shadow-none">
-
           <p className="text-sm text-gray-500 dark:text-gray-400">
             Assessment Suggestions
           </p>
@@ -536,14 +442,10 @@ export default function GuidanceDashboard() {
           <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">
             Suggested based on monitored violations
           </p>
-
         </div>
 
         <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:shadow-none">
-
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            Follow-ups
-          </p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Follow-ups</p>
 
           <p className="mt-2 text-2xl font-bold text-gray-900 dark:text-white">
             {dashboard.followups ?? 0}
@@ -552,11 +454,8 @@ export default function GuidanceDashboard() {
           <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">
             Student follow-ups due
           </p>
-
         </div>
-
       </div>
-
     </div>
   );
 }

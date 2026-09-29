@@ -15,7 +15,7 @@ type LoginResponse = {
   token?: string;
 };
 
-const API_URL = "http://localhost:8000/api";
+const API_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000/api";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -29,9 +29,7 @@ export default function Login() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  const handleSubmit = async (
-    event: FormEvent<HTMLFormElement>,
-  ) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     setError("");
@@ -51,40 +49,26 @@ export default function Login() {
         }),
       });
 
-      const data: LoginResponse =
-        await response.json();
+      const data: LoginResponse = await response.json();
 
       if (!response.ok) {
         if (response.status === 422) {
           throw new Error(
-            data.message ||
-              "The email or password you entered is incorrect.",
+            data.message || "The email or password you entered is incorrect.",
           );
         }
 
-        throw new Error(
-          data.message ||
-            "Unable to sign in. Please try again.",
-        );
+        throw new Error(data.message || "Unable to sign in. Please try again.");
       }
 
       if (!data.token || !data.user) {
-        throw new Error(
-          "Invalid response received from the server.",
-        );
+        throw new Error("Invalid response received from the server.");
       }
 
-      const role =
-        data.user.role.toLowerCase();
+      const role = data.user.role.toLowerCase();
 
-      if (
-        role !== "guidance" &&
-        role !== "teacher" &&
-        role !== "parent"
-      ) {
-        throw new Error(
-          "Your account does not have a valid VIOLA role.",
-        );
+      if (role !== "guidance" && role !== "teacher" && role !== "parent") {
+        throw new Error("Your account does not have a valid VIOLA role.");
       }
 
       localStorage.removeItem("viola_token");
@@ -95,50 +79,30 @@ export default function Login() {
       sessionStorage.removeItem("viola_user");
       sessionStorage.removeItem("viola_portal");
 
-      const storage = remember
-        ? localStorage
-        : sessionStorage;
+      const storage = remember ? localStorage : sessionStorage;
 
-      storage.setItem(
-        "viola_token",
-        data.token,
-      );
+      storage.setItem("viola_token", data.token);
 
-      storage.setItem(
-        "viola_user",
-        JSON.stringify(data.user),
-      );
+      storage.setItem("viola_user", JSON.stringify(data.user));
 
-      storage.setItem(
-        "viola_portal",
-        role,
+      storage.setItem("viola_portal", role);
+
+      window.dispatchEvent(
+        new CustomEvent("viola-auth-changed", {
+          detail: data.user,
+        }),
       );
 
       window.dispatchEvent(
-        new CustomEvent(
-          "viola-auth-changed",
-          {
-            detail: data.user,
-          },
-        ),
+        new CustomEvent("viola-profile-updated", {
+          detail: data.user,
+        }),
       );
 
       window.dispatchEvent(
-        new CustomEvent(
-          "viola-profile-updated",
-          {
-            detail: data.user,
-          },
-        ),
-      );
-
-      window.dispatchEvent(
-        new CustomEvent(
-          "viola-preferences-loaded",
-          {
-            detail: data.user,
-          },
-        ),
+        new CustomEvent("viola-preferences-loaded", {
+          detail: data.user,
+        }),
       );
 
       if (data.user.must_change_password) {
@@ -153,9 +117,7 @@ export default function Login() {
         return;
       }
 
-      setSuccess(
-        "Login successful. Redirecting...",
-      );
+      setSuccess("Login successful. Redirecting...");
 
       switch (role) {
         case "guidance":
@@ -184,9 +146,7 @@ export default function Login() {
       } else if (err instanceof Error) {
         setError(err.message);
       } else {
-        setError(
-          "Something went wrong. Please try again.",
-        );
+        setError("Something went wrong. Please try again.");
       }
     } finally {
       setLoading(false);
@@ -197,18 +157,14 @@ export default function Login() {
     <div className="flex min-h-screen items-center justify-center bg-gray-100 px-4 py-10 dark:bg-gray-950">
       <div className="w-full max-w-5xl overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xl dark:border-gray-800 dark:bg-gray-900">
         <div className="grid min-h-[600px] md:grid-cols-2">
-
           <div className="flex flex-col justify-center bg-gray-800 p-10 text-white md:p-12 dark:bg-gray-950">
-
             <div className="mb-8">
               <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-white text-2xl font-bold text-red-700 shadow-sm">
                 V
               </div>
             </div>
 
-            <h1 className="text-4xl font-bold tracking-tight">
-              VIOLA
-            </h1>
+            <h1 className="text-4xl font-bold tracking-tight">VIOLA</h1>
 
             <p className="mt-3 text-lg font-medium text-gray-300">
               An Intelligent Student
@@ -218,8 +174,8 @@ export default function Login() {
 
             <div className="mt-10 border-t border-gray-600 pt-6">
               <p className="max-w-sm text-sm leading-relaxed text-gray-300">
-                A centralized platform for violation reporting,
-                student monitoring, assessment, and intervention.
+                A centralized platform for violation reporting, student
+                monitoring, assessment, and intervention.
               </p>
             </div>
 
@@ -228,7 +184,6 @@ export default function Login() {
 
           <div className="flex items-center p-8 md:p-12">
             <div className="mx-auto w-full max-w-md">
-
               <div className="mb-8">
                 <p className="text-sm font-semibold uppercase tracking-wider text-red-700">
                   Welcome Back
@@ -261,11 +216,7 @@ export default function Login() {
                 </div>
               )}
 
-              <form
-                onSubmit={handleSubmit}
-                className="space-y-5"
-              >
-
+              <form onSubmit={handleSubmit} className="space-y-5">
                 <div>
                   <label
                     htmlFor="email"
@@ -279,9 +230,7 @@ export default function Login() {
                     name="email"
                     type="email"
                     value={email}
-                    onChange={(event) =>
-                      setEmail(event.target.value)
-                    }
+                    onChange={(event) => setEmail(event.target.value)}
                     placeholder="Enter your email"
                     autoComplete="email"
                     disabled={loading}
@@ -312,9 +261,7 @@ export default function Login() {
                     name="password"
                     type="password"
                     value={password}
-                    onChange={(event) =>
-                      setPassword(event.target.value)
-                    }
+                    onChange={(event) => setPassword(event.target.value)}
                     placeholder="Enter your password"
                     autoComplete="current-password"
                     disabled={loading}
@@ -329,9 +276,7 @@ export default function Login() {
                     name="remember"
                     type="checkbox"
                     checked={remember}
-                    onChange={(event) =>
-                      setRemember(event.target.checked)
-                    }
+                    onChange={(event) => setRemember(event.target.checked)}
                     disabled={loading}
                     className="h-4 w-4 rounded border-gray-300 text-red-700 accent-red-700 focus:ring-red-600"
                   />
@@ -365,10 +310,8 @@ export default function Login() {
                   VIOLA • An Intelligent Student Violation Monitoring
                 </p>
               </div>
-
             </div>
           </div>
-
         </div>
       </div>
     </div>

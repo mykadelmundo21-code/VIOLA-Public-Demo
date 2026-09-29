@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 
-const API_URL = "http://localhost:8000/api";
+const API_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000/api";
 
 type StoredUser = {
   id: number;
@@ -14,15 +14,13 @@ type StoredUser = {
 
 function getToken(): string | null {
   return (
-    localStorage.getItem("viola_token") ||
-    sessionStorage.getItem("viola_token")
+    localStorage.getItem("viola_token") || sessionStorage.getItem("viola_token")
   );
 }
 
 function getStoredUser(): StoredUser | null {
   const raw =
-    localStorage.getItem("viola_user") ||
-    sessionStorage.getItem("viola_user");
+    localStorage.getItem("viola_user") || sessionStorage.getItem("viola_user");
 
   if (!raw) {
     return null;
@@ -57,20 +55,15 @@ export default function ChangePassword() {
   const user = getStoredUser();
   const token = getToken();
 
-  const [currentPassword, setCurrentPassword] =
-    useState("");
+  const [currentPassword, setCurrentPassword] = useState("");
 
-  const [password, setPassword] =
-    useState("");
+  const [password, setPassword] = useState("");
 
-  const [confirmPassword, setConfirmPassword] =
-    useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
-  const [loading, setLoading] =
-    useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const [error, setError] =
-    useState("");
+  const [error, setError] = useState("");
 
   if (!token || !user) {
     navigate("/login", {
@@ -80,136 +73,93 @@ export default function ChangePassword() {
     return null;
   }
 
-  const handleSubmit = async (
-    event: FormEvent<HTMLFormElement>,
-  ) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     setError("");
 
     if (password.length < 8) {
-      setError(
-        "New password must be at least 8 characters.",
-      );
+      setError("New password must be at least 8 characters.");
       return;
     }
 
     if (password !== confirmPassword) {
-      setError(
-        "New password and confirmation do not match.",
-      );
+      setError("New password and confirmation do not match.");
       return;
     }
 
     setLoading(true);
 
     try {
-      const response = await fetch(
-        `${API_URL}/change-password`,
-        {
-          method: "POST",
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            current_password: currentPassword,
-            password,
-            password_confirmation: confirmPassword,
-          }),
+      const response = await fetch(`${API_URL}/change-password`, {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-      );
+        body: JSON.stringify({
+          current_password: currentPassword,
+          password,
+          password_confirmation: confirmPassword,
+        }),
+      });
 
-      const data =
-        await response.json();
+      const data = await response.json();
 
       if (!response.ok) {
-        if (
-          response.status === 422 &&
-          data.errors
-        ) {
-          const firstError =
-            Object.values(data.errors)
-              .flat()
-              .find(
-                (message) =>
-                  typeof message === "string",
-              );
+        if (response.status === 422 && data.errors) {
+          const firstError = Object.values(data.errors)
+            .flat()
+            .find((message) => typeof message === "string");
 
           throw new Error(
-            firstError ||
-              data.message ||
-              "Unable to change password.",
+            firstError || data.message || "Unable to change password.",
           );
         }
 
         throw new Error(
-          data.message ||
-            "Unable to change password. Please try again.",
+          data.message || "Unable to change password. Please try again.",
         );
       }
 
-      const updatedUser =
-        data.user || {
-          ...user,
-          must_change_password: false,
-        };
+      const updatedUser = data.user || {
+        ...user,
+        must_change_password: false,
+      };
 
-      const storage =
-        localStorage.getItem("viola_token")
-          ? localStorage
-          : sessionStorage;
+      const storage = localStorage.getItem("viola_token")
+        ? localStorage
+        : sessionStorage;
 
-      storage.setItem(
-        "viola_user",
-        JSON.stringify(updatedUser),
-      );
+      storage.setItem("viola_user", JSON.stringify(updatedUser));
 
       storage.setItem(
         "viola_portal",
-        String(
-          updatedUser.role ||
-            user.role,
-        ).toLowerCase(),
+        String(updatedUser.role || user.role).toLowerCase(),
       );
 
       window.dispatchEvent(
-        new CustomEvent(
-          "viola-auth-changed",
-          {
-            detail: updatedUser,
-          },
-        ),
+        new CustomEvent("viola-auth-changed", {
+          detail: updatedUser,
+        }),
       );
 
       window.dispatchEvent(
-        new CustomEvent(
-          "viola-profile-updated",
-          {
-            detail: updatedUser,
-          },
-        ),
+        new CustomEvent("viola-profile-updated", {
+          detail: updatedUser,
+        }),
       );
 
       window.dispatchEvent(
-        new CustomEvent(
-          "viola-preferences-loaded",
-          {
-            detail: updatedUser,
-          },
-        ),
+        new CustomEvent("viola-preferences-loaded", {
+          detail: updatedUser,
+        }),
       );
 
-      navigate(
-        getRoleHome(
-          updatedUser.role ||
-            user.role,
-        ),
-        {
-          replace: true,
-        },
-      );
+      navigate(getRoleHome(updatedUser.role || user.role), {
+        replace: true,
+      });
     } catch (err) {
       if (err instanceof TypeError) {
         setError(
@@ -218,9 +168,7 @@ export default function ChangePassword() {
       } else if (err instanceof Error) {
         setError(err.message);
       } else {
-        setError(
-          "Something went wrong. Please try again.",
-        );
+        setError("Something went wrong. Please try again.");
       }
     } finally {
       setLoading(false);
@@ -230,7 +178,6 @@ export default function ChangePassword() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-100 px-4 py-10 dark:bg-gray-950">
       <div className="w-full max-w-md rounded-2xl border border-gray-200 bg-white p-8 shadow-xl dark:border-gray-800 dark:bg-gray-900 md:p-10">
-
         <div className="mb-8">
           <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-xl bg-red-700 text-2xl font-bold text-white shadow-sm">
             V
@@ -245,7 +192,8 @@ export default function ChangePassword() {
           </h1>
 
           <p className="mt-3 text-sm leading-relaxed text-gray-500 dark:text-gray-400">
-            For security, you need to change your temporary password before continuing to VIOLA.
+            For security, you need to change your temporary password before
+            continuing to VIOLA.
           </p>
         </div>
 
@@ -258,10 +206,7 @@ export default function ChangePassword() {
           </div>
         )}
 
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-5"
-        >
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label
               htmlFor="current-password"
@@ -274,11 +219,7 @@ export default function ChangePassword() {
               id="current-password"
               type="password"
               value={currentPassword}
-              onChange={(event) =>
-                setCurrentPassword(
-                  event.target.value,
-                )
-              }
+              onChange={(event) => setCurrentPassword(event.target.value)}
               placeholder="Enter your temporary password"
               autoComplete="current-password"
               disabled={loading}
@@ -299,11 +240,7 @@ export default function ChangePassword() {
               id="new-password"
               type="password"
               value={password}
-              onChange={(event) =>
-                setPassword(
-                  event.target.value,
-                )
-              }
+              onChange={(event) => setPassword(event.target.value)}
               placeholder="Enter your new password"
               autoComplete="new-password"
               disabled={loading}
@@ -325,11 +262,7 @@ export default function ChangePassword() {
               id="confirm-password"
               type="password"
               value={confirmPassword}
-              onChange={(event) =>
-                setConfirmPassword(
-                  event.target.value,
-                )
-              }
+              onChange={(event) => setConfirmPassword(event.target.value)}
               placeholder="Confirm your new password"
               autoComplete="new-password"
               disabled={loading}
@@ -354,7 +287,6 @@ export default function ChangePassword() {
             )}
           </button>
         </form>
-
       </div>
     </div>
   );
