@@ -1,32 +1,31 @@
 <?php
 
-namespace App\Mail;
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
-use Illuminate\Bus\Queueable;
-use Illuminate\Mail\Mailable;
-use Illuminate\Queue\SerializesModels;
-
-class PasswordResetCodeMail extends Mailable
+return new class extends Migration
 {
-    use Queueable, SerializesModels;
-
-    public string $code;
-
     /**
-     * Create a new message instance.
+     * Run the migrations.
      */
-    public function __construct(string $code)
+    public function up(): void
     {
-        $this->code = $code;
+        Schema::create('password_reset_codes', function (Blueprint $table) {
+            $table->id();
+            $table->string('email')->index();
+            $table->string('code_hash');
+            $table->timestamp('expires_at')->index();
+            $table->timestamp('used_at')->nullable()->index();
+            $table->timestamps();
+        });
     }
 
     /**
-     * Build the message.
+     * Reverse the migrations.
      */
-    public function build()
+    public function down(): void
     {
-        return $this
-            ->subject('VIOLA Password Reset Code')
-            ->view('emails.password-reset-code');
+        Schema::dropIfExists('password_reset_codes');
     }
-}
+};
