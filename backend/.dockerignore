@@ -1,0 +1,9 @@
+.env
+.env.*
+.git
+.github
+/vendor
+/node_modules
+/storage/*.key
+/storage/logs/*
+!storage/logs/.gitkeep
