@@ -14,141 +14,110 @@ function getAuthToken(): string | null {
   );
 }
 
-const reverbKey = import.meta.env.VITE_REVERB_APP_KEY;
+export const echo = new Echo({
+  broadcaster: "reverb",
 
-function initEcho(): any {
-  if (!reverbKey) {
+  key: import.meta.env.VITE_REVERB_APP_KEY,
+
+  wsHost:
+    import.meta.env.VITE_REVERB_HOST ||
+    "127.0.0.1",
+
+  wsPort: Number(
+    import.meta.env.VITE_REVERB_PORT || 8080,
+  ),
+
+  wssPort: Number(
+    import.meta.env.VITE_REVERB_PORT || 8080,
+  ),
+
+  forceTLS: false,
+
+  enabledTransports: [
+    "ws",
+    "wss",
+  ],
+
+  authEndpoint:
+    `${API_BASE_URL}/broadcasting/auth`,
+
+  auth: {
+    headers: {
+      Accept: "application/json",
+    },
+  },
+
+  authorizer: (channel: any) => {
     return {
-      private: () => ({
-        listen: () => ({}),
-      }),
-      channel: () => ({
-        listen: () => ({}),
-      }),
-      leave: () => {},
-    };
-  }
+      authorize: (
+        socketId: string,
+        callback: (
+          error: any,
+          data: any,
+        ) => void,
+      ) => {
+        const token =
+          getAuthToken();
 
-  try {
-    return new Echo({
-      broadcaster: "reverb",
+        if (!token) {
+          callback(
+            new Error(
+              "No authentication token found.",
+            ),
+            null,
+          );
 
-      key: reverbKey,
+          return;
+        }
 
-      wsHost:
-        import.meta.env.VITE_REVERB_HOST ||
-        (typeof window !== "undefined" ? window.location.hostname : "127.0.0.1"),
+        fetch(
+          `${API_BASE_URL}/broadcasting/auth`,
+          {
+            method: "POST",
+            headers: {
+              Accept:
+                "application/json",
+              "Content-Type":
+                "application/json",
+              Authorization:
+                `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              socket_id:
+                socketId,
+              channel_name:
+                channel.name,
+            }),
+          },
+        )
+          .then(async (response) => {
+            const data =
+              await response.json();
 
-      wsPort: Number(
-        import.meta.env.VITE_REVERB_PORT || 8080,
-      ),
-
-      wssPort: Number(
-        import.meta.env.VITE_REVERB_PORT || 8080,
-      ),
-
-      forceTLS: false,
-
-      enabledTransports: [
-        "ws",
-        "wss",
-      ],
-
-      authEndpoint:
-        `${API_BASE_URL}/broadcasting/auth`,
-
-      auth: {
-        headers: {
-          Accept: "application/json",
-        },
-      },
-
-      authorizer: (channel: any) => {
-        return {
-          authorize: (
-            socketId: string,
-            callback: (
-              error: any,
-              data: any,
-            ) => void,
-          ) => {
-            const token =
-              getAuthToken();
-
-            if (!token) {
+            if (!response.ok) {
               callback(
                 new Error(
-                  "No authentication token found.",
+                  data?.message ||
+                    "Unable to authorize broadcast channel.",
                 ),
-                null,
+                data,
               );
 
               return;
             }
 
-            fetch(
-              `${API_BASE_URL}/broadcasting/auth`,
-              {
-                method: "POST",
-                headers: {
-                  Accept:
-                    "application/json",
-                  "Content-Type":
-                    "application/json",
-                  Authorization:
-                    `Bearer ${token}`,
-                },
-                body: JSON.stringify({
-                  socket_id:
-                    socketId,
-                  channel_name:
-                    channel.name,
-                }),
-              },
-            )
-              .then(async (response) => {
-                const data =
-                  await response.json();
-
-                if (!response.ok) {
-                  callback(
-                    new Error(
-                      data?.message ||
-                        "Unable to authorize broadcast channel.",
-                    ),
-                    data,
-                  );
-
-                  return;
-                }
-
-                callback(
-                  null,
-                  data,
-                );
-              })
-              .catch((error) => {
-                callback(
-                  error,
-                  null,
-                );
-              });
-          },
-        };
+            callback(
+              null,
+              data,
+            );
+          })
+          .catch((error) => {
+            callback(
+              error,
+              null,
+            );
+          });
       },
-    });
-  } catch (error) {
-    console.warn("Laravel Echo failed to initialize:", error);
-    return {
-      private: () => ({
-        listen: () => ({}),
-      }),
-      channel: () => ({
-        listen: () => ({}),
-      }),
-      leave: () => {},
     };
-  }
-}
-
-export const echo = initEcho();
+  },
+});
