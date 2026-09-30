@@ -13,18 +13,7 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        // Guidance accounts
-        User::updateOrCreate(
-            ['email' => 'admin@gmail.com'],
-            [
-                'name' => 'Administrator',
-                'password' => Hash::make('Guidance123!'),
-                'role' => 'guidance',
-                'phone' => null,
-                'email_verified_at' => now(),
-            ]
-        );
-
+        // Guidance account
         User::updateOrCreate(
             ['email' => 'guidance@viola.edu'],
             [
