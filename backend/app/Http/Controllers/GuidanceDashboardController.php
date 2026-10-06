@@ -73,22 +73,43 @@ class GuidanceDashboardController extends Controller
 
         /*
          * MONTHLY VIOLATION ACTIVITY
+         *
+         * SQLite and MySQL use different SQL functions for month/year extraction,
+         * so we keep the query database-aware to avoid a 500 during dashboard loads.
          */
-        $monthlyActivity = DB::table('violations')
-            ->select(
-                DB::raw('MONTH(incident_at) as month'),
-                DB::raw('COUNT(id) as count')
-            )
-            ->whereYear('incident_at', now()->year)
-            ->groupBy(DB::raw('MONTH(incident_at)'))
-            ->orderBy('month')
-            ->get()
-            ->map(function ($item) {
-                return [
-                    'month' => $item->month,
-                    'count' => (int) $item->count,
-                ];
-            });
+        if (config('database.default') === 'sqlite') {
+            $monthlyActivity = DB::table('violations')
+                ->select(
+                    DB::raw("CAST(strftime('%m', incident_at) AS INTEGER) as month"),
+                    DB::raw('COUNT(id) as count')
+                )
+                ->whereRaw("strftime('%Y', incident_at) = ?", [now()->year])
+                ->groupBy(DB::raw("strftime('%m', incident_at)"))
+                ->orderBy('month')
+                ->get()
+                ->map(function ($item) {
+                    return [
+                        'month' => (int) $item->month,
+                        'count' => (int) $item->count,
+                    ];
+                });
+        } else {
+            $monthlyActivity = DB::table('violations')
+                ->select(
+                    DB::raw('MONTH(incident_at) as month'),
+                    DB::raw('COUNT(id) as count')
+                )
+                ->whereYear('incident_at', now()->year)
+                ->groupBy(DB::raw('MONTH(incident_at)'))
+                ->orderBy('month')
+                ->get()
+                ->map(function ($item) {
+                    return [
+                        'month' => (int) $item->month,
+                        'count' => (int) $item->count,
+                    ];
+                });
+        }
 
         /*
          * RECENT VIOLATION REPORTS
